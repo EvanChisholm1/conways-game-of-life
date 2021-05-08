@@ -3,8 +3,9 @@ import Game from './game';
 const startButton = document.querySelector('#start-button');
 const stopButton = document.querySelector('#stop-button');
 const stepButton = document.querySelector('#step-button');
-
-let zoom = 1;
+const resetButton = document.querySelector('#reset-button');
+const zoomInButton = document.querySelector('#zoomin-button');
+const zoomOutButton = document.querySelector('#zoomout-button');
 
 const canvas = document.querySelector<HTMLCanvasElement>('#canvas');
 if (!canvas) throw new Error('No Canvas element found');
@@ -14,21 +15,17 @@ if (!ctx) throw new Error('no ctx');
 
 let isMouseDown = false;
 
-const cellSize = 30;
-const numberofColumns = canvas.offsetWidth / cellSize;
-const numberOfRows = canvas.offsetHeight / cellSize;
-
 ctx.strokeStyle = 'white';
 ctx.lineWidth = 1;
 
 let interval: number | null;
 
-const game = new Game();
-game.render(ctx, canvas);
+const game = new Game(ctx, canvas);
+game.render();
 function start() {
   interval = setInterval(() => {
     game.update();
-    game.render(ctx as CanvasRenderingContext2D, canvas as HTMLCanvasElement);
+    game.render();
   }, 1000 / 5);
 }
 
@@ -41,15 +38,28 @@ stopButton?.addEventListener('click', () => stop());
 startButton?.addEventListener('click', () => start());
 stepButton?.addEventListener('click', () => {
   game.update();
-  game.render(ctx as CanvasRenderingContext2D, canvas as HTMLCanvasElement);
+  game.render();
+});
+resetButton?.addEventListener('click', () => {
+  game.reset();
+  stop();
+});
+zoomInButton?.addEventListener('click', () => {
+  game.zoom = game.zoom * 2;
+  game.render();
+});
+zoomOutButton?.addEventListener('click', () => {
+  game.zoom = game.zoom / 2;
+  game.render();
 });
 
 function draw(e: MouseEvent) {
   if (isMouseDown) {
+    const cellSize = game.cellSize * game.zoom;
     const x = Math.floor(e.offsetX / cellSize);
     const y = Math.floor(e.offsetY / cellSize);
     game.board.setCell(x, y, true);
-    game.render(ctx!, canvas!);
+    game.render();
   }
 }
 
@@ -69,14 +79,5 @@ canvas.addEventListener('mouseup', (e) => {
   draw(e);
 });
 canvas.addEventListener('mousemove', (e) => {
-  if (isMouseDown) {
-    const x = Math.floor(e.offsetX / cellSize);
-    const y = Math.floor(e.offsetY / cellSize);
-    game.board.setCell(x, y, true);
-    game.render(ctx, canvas);
-  }
-});
-canvas.addEventListener('wheel', (e) => {
-  console.log(e);
-  console.log(++zoom);
+  draw(e);
 });

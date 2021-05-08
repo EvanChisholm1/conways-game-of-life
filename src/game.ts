@@ -4,20 +4,24 @@ export default class Game {
   board: Board;
   cellSize: number = 30;
   zoom: number = 1;
+  ctx: CanvasRenderingContext2D;
+  canvas: HTMLCanvasElement;
 
-  constructor() {
+  constructor(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
     this.board = new Board();
+    this.ctx = ctx;
+    this.canvas = canvas;
   }
 
-  render(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
+  render() {
     const cellSize = this.cellSize * this.zoom;
-    ctx.fillStyle = 'black';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    this.ctx.fillStyle = 'black';
+    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
-    ctx.fillStyle = '#00FF00';
+    this.ctx.fillStyle = '#00FF00';
     this.board.forEach(({ x, y }) => {
       if (this.board.getCell(x, y)) {
-        ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+        this.ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
       }
     });
   }
@@ -50,10 +54,12 @@ export default class Game {
   reset() {
     this.zoom = 1;
     this.board = new Board();
+    this.render();
   }
 
   changeZoom(amount: number) {
     this.zoom += amount;
+    this.render();
   }
 }
 
